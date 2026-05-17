@@ -1,0 +1,12 @@
+# Ignore any unsanitized workflow exports
+workflow/email-summarizer.json
+
+# Mac OS
+.DS_Store
+
+# Environment files
+.env
+*.env
+
+# n8n local config
+.n8n/
