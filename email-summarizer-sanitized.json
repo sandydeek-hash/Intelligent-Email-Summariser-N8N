@@ -106,7 +106,7 @@
     },
     {
       "parameters": {
-        "sendTo": "your-email@gmail.com",
+        "sendTo": "sandhya.dev5533@gmail.com",
         "subject": "={{ $json.output[0].content[0].text.split('\\n\\n')[0] }}",
         "emailType": "text",
         "message": "{{ $json.output[0].content[0].text.split('\\n\\n').slice(1).join('\\n\\n') }}",
