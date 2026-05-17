@@ -1,0 +1,204 @@
+{
+  "name": "Email summariser",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "getAll",
+        "limit": 2,
+        "filters": {
+          "receivedAfter": "2026-01-24T00:00:00"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "98d239af-36cf-4ed4-a7b6-f66499f4b252",
+      "name": "Get many messages",
+      "webhookId": "0e1c05df-b337-48fb-a5cc-d4e24f4cce21",
+      "alwaysOutputData": true,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Your Gmail Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "=You are an expert email assistant, Your job is to go through the details of all the emails and summarize them into quick summaries in bullet points along with the action items if any. Your emails should be in a professional tone. Include required useful links while summaries. Do NOT ask follow-up questions.\nAssume the email content provided is complete.\nStructure:\n- Subject line\n- Short intro\n- Bullet summaries\n- Links section\n\nEMAIL CONTENT:\n{{ $json.data[0].snippet + \"\\n\\n\" + $json.data[1].snippet }}"
+            },
+            {}
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        832,
+        0
+      ],
+      "id": "934eca58-a6ed-41af-b065-c737b10b4620",
+      "name": "Message a model",
+      "alwaysOutputData": true,
+      "credentials": {
+        "openAiApi": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Your Gmail Account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "include": "specifiedFields",
+        "fieldsToInclude": "id, snippet, Subject, From, To",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        432,
+        0
+      ],
+      "id": "5b3dcb33-de55-4636-a25a-3cfddf26645d",
+      "name": "Aggregate1",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "53c09faf-9922-46f1-9d20-bd5933dcb17f",
+      "name": "When clicking \u2018Execute workflow\u2019",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "amount": 2
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        640,
+        0
+      ],
+      "id": "2018b630-5cd0-4a00-b97f-613d843c445b",
+      "name": "Wait",
+      "webhookId": "9d803e12-8083-4c39-be6e-8656351f2d06"
+    },
+    {
+      "parameters": {
+        "sendTo": "your-email@gmail.com",
+        "subject": "={{ $json.output[0].content[0].text.split('\\n\\n')[0] }}",
+        "emailType": "text",
+        "message": "{{ $json.output[0].content[0].text.split('\\n\\n').slice(1).join('\\n\\n') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1184,
+        0
+      ],
+      "id": "6236f182-5f15-4d80-84e4-1a5573971d06",
+      "name": "Send a message",
+      "webhookId": "b7d20999-f1bd-4da0-8632-6605761fd2d6",
+      "alwaysOutputData": true,
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "Your Gmail Account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Get many messages": {
+      "main": [
+        [
+          {
+            "node": "Aggregate1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When clicking \u2018Execute workflow\u2019": {
+      "main": [
+        [
+          {
+            "node": "Get many messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate1": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "Message a model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "dbc7f0da-20c5-4aa8-96b0-e52494424fce",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "YOUR_INSTANCE_ID"
+  },
+  "id": "NorA1qVAUsIhGInm3SfCr",
+  "tags": []
+}
